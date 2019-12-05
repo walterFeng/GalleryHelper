@@ -1,2 +1,2 @@
 include ':app', ':galleryHelper'
-rootProject.name='GalleryRecyclerView'
+rootProject.name='GalleryHelper'
