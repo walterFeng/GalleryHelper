@@ -1,4 +1,4 @@
-package sms.icydesign.com.myapplication
+package com.walter.gallery.helper
 
 import org.junit.Test
 
