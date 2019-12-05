@@ -98,14 +98,18 @@ open class PagingScrollHelper {
      *  @param adapter recyclerView adapter
      */
     fun attachToRecyclerView(recycleView: RecyclerView?, adapter: RecyclerView.Adapter<*>?) {
+        detachedToRecyclerView()
         requireNotNull(recycleView) { "recycleView must be not null" }
         mRecyclerView = recycleView
         mInnerHandler = InnerHandler(this)
         mAdapter = adapter
         recycleView.onFlingListener = mOnFlingListener
-        recycleView.removeOnScrollListener(mOnScrollListener)
         recycleView.addOnScrollListener(mOnScrollListener)
         updateLayoutManger()
+    }
+
+    fun detachedToRecyclerView() {
+        mRecyclerView?.removeOnScrollListener(mOnScrollListener)
     }
 
     /**

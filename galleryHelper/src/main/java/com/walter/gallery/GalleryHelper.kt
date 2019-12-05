@@ -12,9 +12,9 @@ class GalleryHelper {
 
     lateinit var recyclerView: RecyclerView
 
-    val pagingScrollHelper: PagingScrollHelper = PagingScrollHelper()
-    val scaleTransformHelper: ScaleTransformHelper = ScaleTransformHelper()
-    val lopperHelper: LopperHelper = LopperHelper()
+    var pagingScrollHelper: PagingScrollHelper = PagingScrollHelper()
+    var scaleTransformHelper: ScaleTransformHelper = ScaleTransformHelper()
+    var lopperHelper: LopperHelper = LopperHelper()
 
     /**
      *  @param loopParams adapterCount will be multiplied by this value to implement the loop function，
@@ -29,7 +29,14 @@ class GalleryHelper {
         pagingScrollHelper.attachToRecyclerView(recyclerView, recyclerView.adapter!!)
         scaleTransformHelper.attachToRecyclerView(recyclerView, scale, alpha)
         lopperHelper.attachToRecyclerView(recyclerView, loopParams > 0, loopParams, itemSpace)
+        pagingScrollHelper.updateLayoutManger()
         return this
+    }
+
+    fun detached() {
+        pagingScrollHelper.detachedToRecyclerView()
+        scaleTransformHelper.detachedToRecyclerView()
+        lopperHelper.detachedToRecyclerView()
     }
 
     companion object {

@@ -13,11 +13,13 @@ import android.view.View
  */
 class ScaleTransformHelper {
 
-    private val scaleScrollListener: ScaleScrollListener = ScaleScrollListener(0f, 0f)
+    private var scaleScrollListener: ScaleScrollListener? = null
 
-    private var layoutChangeListener: LayoutChangeListener = LayoutChangeListener()
+    private var layoutChangeListener: LayoutChangeListener? = null
 
     private var orientation: Int = RecyclerView.HORIZONTAL
+
+    private var mRecyclerView: RecyclerView? = null
 
     /**
      *  @param recyclerView recyclerView you want to support
@@ -25,20 +27,27 @@ class ScaleTransformHelper {
      *  @param alpha The transparency values ​​of the left and right items
      */
     fun attachToRecyclerView(recyclerView: RecyclerView, scale: Float, alpha: Float) {
-        scaleScrollListener.alpha = alpha
-        scaleScrollListener.scale = scale
-        recyclerView.removeOnScrollListener(scaleScrollListener)
-        recyclerView.addOnScrollListener(scaleScrollListener)
-        layoutChangeListener.recyclerView = recyclerView
-        layoutChangeListener.scale = scale
-        layoutChangeListener.alpha = alpha
-        recyclerView.removeOnLayoutChangeListener(layoutChangeListener)
-        recyclerView.addOnLayoutChangeListener(layoutChangeListener)
+        detachedToRecyclerView()
 
+        this.mRecyclerView = recyclerView
         orientation = when {
             recyclerView.layoutManager!!.canScrollVertically() -> RecyclerView.VERTICAL
             recyclerView.layoutManager!!.canScrollHorizontally() -> RecyclerView.HORIZONTAL
             else -> RecyclerView.HORIZONTAL
+        }
+
+        layoutChangeListener = LayoutChangeListener(recyclerView, scale, alpha)
+        scaleScrollListener = ScaleScrollListener(scale, alpha)
+        recyclerView.addOnScrollListener(scaleScrollListener!!)
+        recyclerView.addOnLayoutChangeListener(layoutChangeListener)
+    }
+
+    fun detachedToRecyclerView() {
+        if (layoutChangeListener != null) {
+            mRecyclerView?.removeOnLayoutChangeListener(layoutChangeListener)
+        }
+        if (scaleScrollListener != null) {
+            mRecyclerView?.removeOnScrollListener(scaleScrollListener!!)
         }
     }
 
@@ -46,8 +55,7 @@ class ScaleTransformHelper {
         RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             val childCount = recyclerView.childCount
-            val padding =
-                if (isHorizontal()) recyclerView.paddingLeft else recyclerView.paddingTop
+            val padding = if (isHorizontal()) recyclerView.paddingLeft else recyclerView.paddingTop
             (0 until childCount).forEach {
                 val view = recyclerView.getChildAt(it)
                 val size = if (isHorizontal()) view.width else view.height
@@ -77,10 +85,6 @@ class ScaleTransformHelper {
     ) :
         View.OnLayoutChangeListener {
 
-        private val layoutManager: LinearLayoutManager by lazy { recyclerView!!.layoutManager as LinearLayoutManager }
-
-        private val adapter: Adapter<RecyclerView.ViewHolder> by lazy { recyclerView!!.adapter as Adapter }
-
         override fun onLayoutChange(
             v: View,
             left: Int,
@@ -92,6 +96,8 @@ class ScaleTransformHelper {
             oldRight: Int,
             oldBottom: Int
         ) {
+            val layoutManager = recyclerView!!.layoutManager as LinearLayoutManager
+            val adapter = recyclerView!!.adapter as Adapter
             if (recyclerView!!.childCount < 3) {
                 if (recyclerView!!.getChildAt(1) != null) {
                     if (layoutManager.findFirstCompletelyVisibleItemPosition() % adapter.itemCount == 0) {

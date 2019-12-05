@@ -19,7 +19,7 @@ class LopperHelper {
     private var mInitPosition = 0
 
     /**
-     * @param recyclerView attach to the recyclerView
+     * @param recyclerView detached to the recyclerView
      * @param loop if recyclerView be allowed to loop
      * @param loopParams parameters for looping
      * @param itemSpace If you need to add spacing between item
@@ -30,6 +30,7 @@ class LopperHelper {
         loopParams: Int,
         itemSpace: Int = 0
     ) {
+        detachedToRecyclerView()
         this.mRecyclerView = recyclerView
         mAdapter = recyclerView.adapter!!
         mAdapterWrap = LopperAdapterWrap(recyclerView, mAdapter!!, loop, loopParams, itemSpace)
@@ -37,6 +38,10 @@ class LopperHelper {
         recyclerView.adapter = mAdapterWrap
         mInitPosition = if (loop) (loopParams * mAdapter!!.itemCount) / 2 else 0
         recyclerView.scrollToPosition(mInitPosition)
+    }
+
+    fun detachedToRecyclerView() {
+        mRecyclerView?.adapter = mAdapter
     }
 
     /**
