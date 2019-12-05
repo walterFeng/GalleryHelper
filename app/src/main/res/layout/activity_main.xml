@@ -20,9 +20,10 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
+        android:background="@android:color/darker_gray"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingTop="10dp"
+        android:padding="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

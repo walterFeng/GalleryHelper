@@ -4,6 +4,12 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
 
+/**
+ * Created by walter on 2019/12/4.
+ * Email: fengxiao1493@qq.com
+ * A Tool that Make recyclerView support circular sliding
+ * 使RecyclerView支持循环滑动的工具
+ */
 @Suppress("unused")
 class LopperHelper {
 
@@ -18,7 +24,12 @@ class LopperHelper {
      * @param loopParams parameters for looping
      * @param itemSpace If you need to add spacing between item
      */
-    fun attachToRecyclerView(recyclerView: RecyclerView, loop: Boolean, loopParams: Int, itemSpace: Int = 0) {
+    fun attachToRecyclerView(
+        recyclerView: RecyclerView,
+        loop: Boolean,
+        loopParams: Int,
+        itemSpace: Int = 0
+    ) {
         this.mRecyclerView = recyclerView
         mAdapter = recyclerView.adapter!!
         mAdapterWrap = LopperAdapterWrap(recyclerView, mAdapter!!, loop, loopParams, itemSpace)
@@ -67,14 +78,21 @@ class LopperHelper {
 
     fun notifyItemRangeChangedSupport(positionStart: Int, itemCount: Int) {
         if (mAdapterWrap!!.loop)
-            mAdapterWrap!!.notifyItemRangeChanged(gerCurrentNearestPosition(positionStart), itemCount)
+            mAdapterWrap!!.notifyItemRangeChanged(
+                gerCurrentNearestPosition(positionStart),
+                itemCount
+            )
         else
             mAdapterWrap!!.notifyItemRangeChanged(positionStart, itemCount)
     }
 
     fun notifyItemRangeChangedSupport(positionStart: Int, itemCount: Int, payload: Any?) {
         if (mAdapterWrap!!.loop)
-            mAdapterWrap!!.notifyItemRangeChanged(gerCurrentNearestPosition(positionStart), itemCount, payload)
+            mAdapterWrap!!.notifyItemRangeChanged(
+                gerCurrentNearestPosition(positionStart),
+                itemCount,
+                payload
+            )
         else
             mAdapterWrap!!.notifyItemRangeChanged(positionStart, itemCount, payload)
     }
@@ -98,7 +116,10 @@ class LopperHelper {
 
     fun notifyItemRangeInsertedSupport(positionStart: Int, itemCount: Int) {
         if (mAdapterWrap!!.loop)
-            mAdapterWrap!!.notifyItemRangeInserted(gerCurrentNearestPosition(positionStart), itemCount)
+            mAdapterWrap!!.notifyItemRangeInserted(
+                gerCurrentNearestPosition(positionStart),
+                itemCount
+            )
         else
             mAdapterWrap!!.notifyItemRangeInserted(positionStart, itemCount)
     }
@@ -112,7 +133,10 @@ class LopperHelper {
 
     fun notifyItemRangeRemovedSupport(positionStart: Int, itemCount: Int) {
         if (mAdapterWrap!!.loop)
-            mAdapterWrap!!.notifyItemRangeRemoved(gerCurrentNearestPosition(positionStart), itemCount)
+            mAdapterWrap!!.notifyItemRangeRemoved(
+                gerCurrentNearestPosition(positionStart),
+                itemCount
+            )
         else
             mAdapterWrap!!.notifyItemRangeRemoved(positionStart, itemCount)
     }
@@ -155,17 +179,30 @@ class LopperHelper {
     /**
      * Adapter that supports circular scrolling
      */
-    class LopperAdapterWrap<VH : RecyclerView.ViewHolder>(val recyclerView: RecyclerView, val adapter: RecyclerView.Adapter<VH>,
-                                                          var loop: Boolean, val loopParams: Int, private val space: Int = 0)
-        : RecyclerView.Adapter<VH>() {
+    class LopperAdapterWrap<VH : RecyclerView.ViewHolder>(
+        recyclerView: RecyclerView, private val adapter: RecyclerView.Adapter<VH>,
+        var loop: Boolean, val loopParams: Int, private val space: Int = 0
+    ) : RecyclerView.Adapter<VH>() {
+
+        private val orientation = when {
+            recyclerView.layoutManager!!.canScrollVertically() -> RecyclerView.VERTICAL
+            recyclerView.layoutManager!!.canScrollHorizontally() -> RecyclerView.HORIZONTAL
+            else -> RecyclerView.VERTICAL
+        }
+        private val spaceValue = (space / 2f).toInt()
 
         fun getRealAdapter(): RecyclerView.Adapter<out RecyclerView.ViewHolder> = adapter
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): VH {
             val index = position % (adapter.itemCount)
             val viewHolder = adapter.onCreateViewHolder(parent, index)
-            (viewHolder.itemView.layoutParams as ViewGroup.MarginLayoutParams).leftMargin = (space / 2f).toInt()
-            (viewHolder.itemView.layoutParams as ViewGroup.MarginLayoutParams).rightMargin = (space / 2f).toInt()
+
+            val params = viewHolder.itemView.layoutParams as ViewGroup.MarginLayoutParams
+            params.leftMargin = if (orientation == RecyclerView.HORIZONTAL) spaceValue else 0
+            params.rightMargin = if (orientation == RecyclerView.HORIZONTAL) spaceValue else 0
+            params.topMargin = if (orientation == RecyclerView.HORIZONTAL) 0 else spaceValue
+            params.bottomMargin = if (orientation == RecyclerView.HORIZONTAL) 0 else spaceValue
+
             return viewHolder
         }
 

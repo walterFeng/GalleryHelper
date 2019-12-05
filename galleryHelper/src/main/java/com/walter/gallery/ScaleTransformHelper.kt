@@ -5,79 +5,127 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.RecyclerView.Adapter
 import android.view.View
 
+/**
+ * Created by walter on 2019/12/4.
+ * Email: fengxiao1493@qq.com
+ * Tool that supports RecyclerView item zoom when sliding
+ * 支持RecyclerView的Item随着滑动时缩放的工具
+ */
 class ScaleTransformHelper {
 
     private val scaleScrollListener: ScaleScrollListener = ScaleScrollListener(0f, 0f)
 
-    class ScaleScrollListener(var scale: Float, var alpha: Float) : RecyclerView.OnScrollListener() {
+    private var layoutChangeListener: LayoutChangeListener = LayoutChangeListener()
+
+    private var orientation: Int = RecyclerView.HORIZONTAL
+
+    /**
+     *  @param recyclerView recyclerView you want to support
+     *  @param scale Left and right item scaling values
+     *  @param alpha The transparency values ​​of the left and right items
+     */
+    fun attachToRecyclerView(recyclerView: RecyclerView, scale: Float, alpha: Float) {
+        scaleScrollListener.alpha = alpha
+        scaleScrollListener.scale = scale
+        recyclerView.removeOnScrollListener(scaleScrollListener)
+        recyclerView.addOnScrollListener(scaleScrollListener)
+        layoutChangeListener.recyclerView = recyclerView
+        layoutChangeListener.scale = scale
+        layoutChangeListener.alpha = alpha
+        recyclerView.removeOnLayoutChangeListener(layoutChangeListener)
+        recyclerView.addOnLayoutChangeListener(layoutChangeListener)
+
+        orientation = when {
+            recyclerView.layoutManager!!.canScrollVertically() -> RecyclerView.VERTICAL
+            recyclerView.layoutManager!!.canScrollHorizontally() -> RecyclerView.HORIZONTAL
+            else -> RecyclerView.HORIZONTAL
+        }
+    }
+
+    inner class ScaleScrollListener(var scale: Float = 1f, var alpha: Float = 1f) :
+        RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             val childCount = recyclerView.childCount
-            val padding = recyclerView.paddingLeft
+            val padding =
+                if (isHorizontal()) recyclerView.paddingLeft else recyclerView.paddingTop
             (0 until childCount).forEach {
-                val v = recyclerView.getChildAt(it)
+                val view = recyclerView.getChildAt(it)
+                val size = if (isHorizontal()) view.width else view.height
+                val parentSize = if (isHorizontal()) recyclerView.width else recyclerView.height
+                val excursion = if (isHorizontal()) view.left else view.top
                 var rate = 0f
-                if (v.left <= padding) {
-                    rate = if (v.left >= padding - v.width) {
-                        (padding - v.left) * 1f / v.width
-                    } else {
-                        1f
-                    }
-                    v.scaleY = 1 - rate * (1 - scale)
-                    v.alpha = 1 - rate * (1 - alpha)
+                if (excursion <= padding) {
+                    rate = if (excursion >= padding - size)
+                        ((padding - excursion) * 1f / size) else 1f
+                    scaleItem(view, 1 - rate * (1 - scale))
+                    view.alpha = 1 - rate * (1 - alpha)
                 } else {
-                    if (v.left <= recyclerView.width - padding) {
-                        rate = (recyclerView.width - padding - v.left) * 1f / v.width
+                    if (excursion <= parentSize - padding) {
+                        rate = (parentSize - padding - excursion) * 1f / size
                     }
-                    v.scaleY = scale + rate * (1 - scale)
-                    v.alpha = alpha + rate * (1 - alpha)
+                    scaleItem(view, scale + rate * (1 - scale))
+                    view.alpha = alpha + rate * (1 - alpha)
                 }
             }
         }
     }
 
-    private var layoutChangeListener: LayoutChangeListener? = null
+    inner class LayoutChangeListener(
+        var recyclerView: RecyclerView? = null,
+        var scale: Float = 1f,
+        var alpha: Float = 1f
+    ) :
+        View.OnLayoutChangeListener {
 
-    class LayoutChangeListener(var recyclerView: RecyclerView, var scale: Float, var alpha: Float) : View.OnLayoutChangeListener {
+        private val layoutManager: LinearLayoutManager by lazy { recyclerView!!.layoutManager as LinearLayoutManager }
 
-        val layoutManager: LinearLayoutManager = recyclerView.layoutManager as LinearLayoutManager
-        val adapter: Adapter<RecyclerView.ViewHolder> = recyclerView.adapter as Adapter
+        private val adapter: Adapter<RecyclerView.ViewHolder> by lazy { recyclerView!!.adapter as Adapter }
 
-        override fun onLayoutChange(p0: View?, p1: Int, p2: Int, p3: Int, p4: Int, p5: Int, p6: Int, p7: Int, p8: Int) {
-            if (recyclerView.childCount < 3) {
-                if (recyclerView.getChildAt(1) != null) {
+        override fun onLayoutChange(
+            v: View,
+            left: Int,
+            top: Int,
+            right: Int,
+            bottom: Int,
+            oldLeft: Int,
+            oldTop: Int,
+            oldRight: Int,
+            oldBottom: Int
+        ) {
+            if (recyclerView!!.childCount < 3) {
+                if (recyclerView!!.getChildAt(1) != null) {
                     if (layoutManager.findFirstCompletelyVisibleItemPosition() % adapter.itemCount == 0) {
-                        val v1 = recyclerView.getChildAt(1)
-                        v1.scaleY = scale
+                        val v1 = recyclerView!!.getChildAt(1)
+                        scaleItem(v1, scale)
                         v1.alpha = alpha
                     } else {
-                        val v1 = recyclerView.getChildAt(0)
-                        v1.scaleY = scale
+                        val v1 = recyclerView!!.getChildAt(0)
+                        scaleItem(v1, scale)
                         v1.alpha = alpha
                     }
                 }
             } else {
-                if (recyclerView.getChildAt(0) != null) {
-                    val v0 = recyclerView.getChildAt(0)
-                    v0.scaleY = scale
+                if (recyclerView!!.getChildAt(0) != null) {
+                    val v0 = recyclerView!!.getChildAt(0)
+                    scaleItem(v0, scale)
                     v0.alpha = alpha
                 }
-                if (recyclerView.getChildAt(2) != null) {
-                    val v2 = recyclerView.getChildAt(2)
-                    v2.scaleY = scale
+                if (recyclerView!!.getChildAt(2) != null) {
+                    val v2 = recyclerView!!.getChildAt(2)
+                    scaleItem(v2, scale)
                     v2.alpha = alpha
                 }
             }
         }
     }
 
-    fun attachToRecyclerView(recyclerView: RecyclerView, scale: Float, alpha: Float) {
-        scaleScrollListener.alpha = alpha
-        scaleScrollListener.scale = scale
-        recyclerView.removeOnScrollListener(scaleScrollListener)
-        recyclerView.addOnScrollListener(scaleScrollListener)
-        recyclerView.removeOnLayoutChangeListener(layoutChangeListener)
-        layoutChangeListener = LayoutChangeListener(recyclerView, scale, alpha)
-        recyclerView.addOnLayoutChangeListener(layoutChangeListener)
+    private fun scaleItem(view: View, value: Float) {
+        view.scaleY = if (isHorizontal()) value else 1f
+        view.scaleX = if (isHorizontal()) 1f else value
+    }
+
+    private fun isHorizontal(): Boolean {
+        return orientation == RecyclerView.HORIZONTAL
     }
 
 }

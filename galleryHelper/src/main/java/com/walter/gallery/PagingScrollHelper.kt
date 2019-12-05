@@ -11,54 +11,49 @@ import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 /**
- *支持recyclerView翻页滑动的工具类
+ * Created by walter on 2019/12/4.
+ * Email: fengxiao1493@qq.com
+ * A tool that supports RecyclerView page scrolling
+ * 支持recyclerView翻页滑动的工具类
  */
 @Suppress("unused")
 open class PagingScrollHelper {
+
+    // recycler view params:
     private var mRecyclerView: RecyclerView? = null
     private var mAdapter: RecyclerView.Adapter<*>? = null
     private var mAnimator: ValueAnimator? = null
     private val mOnScrollListener = MyOnScrollListener()
-    private var mOnPageChangeListener: OnPageChangeListener? = null
+    private var mOnPageChangeListener: OnPageChangedListener? = null
     private val mOnFlingListener = MyOnFlingListener()
-    //当前滑动距离
-    private var offsetY = 0
-    private var offsetX = 0
-
-    //按下屏幕点
-    private var startY = 0
-    private var startX = 0
-
-    //最后一个可见 view 位置
-    private var lastItemPosition = -1
-    //第一个可见view的位置
-    private var firstItemPosition = -2
-    //总 itemView 数量
-    private var itemCount: Int = 0
-    //滑动至哪一页
-    private var currentPage = -1
-    //一次滚动 n 页
-    private var indexPage: Int = 0
-
     private var mOrientation = ORIENTATION.HORIZONTAL
 
-    private var mAutoScrollDuration: Long = 5000 // 自动滚动间隔时长
+    // scroll values:
+    private var offsetY = 0   //scroll offset Y
+    private var offsetX = 0   //scroll offset X
+    private var startY = 0    //event down Y
+    private var startX = 0    //event down X
+    private var lastItemPosition = -1
+    private var firstItemPosition = -2
+    private var itemCount: Int = 0  //adapter item count
+    private var currentPage = -1    //current page position
+    private var indexPage: Int = 0
 
+    // auto scroll:
+    private var mAutoScrollDuration: Long = 5000
     private var mInnerHandler: InnerHandler? = null
+    private var mAutoScrollEnable = false
 
-    private var mAutoScrollEnable = false  //是否支持自动滚动
-
-    private val pageIndex: Int //当前滚动到的位置除以屏幕高度的整数就是当前滚动的位置
+    // page index:
+    private val pageIndex: Int
         get() {
-            //获取当前滚动的页数
             return if (mOrientation == ORIENTATION.VERTICAL) {
                 offsetY / originHeight
             } else {
                 offsetX / originWidth
             }
         }
-
-    private val startPageIndex: Int //当前按下坐标时对应的页数
+    private val startPageIndex: Int
         get() {
             return if (mOrientation == ORIENTATION.VERTICAL) {
                 startY / originHeight
@@ -67,6 +62,8 @@ open class PagingScrollHelper {
             }
         }
 
+
+    // page width and height:
     private val originHeight: Int
         get() = mRecyclerView!!.height - mRecyclerView!!.paddingTop - mRecyclerView!!.paddingBottom
 
@@ -77,7 +74,7 @@ open class PagingScrollHelper {
         HORIZONTAL, VERTICAL, NULL
     }
 
-    interface OnPageChangeListener {
+    interface OnPageChangedListener {
         fun onPageChange(index: Int)
     }
 
@@ -96,6 +93,10 @@ open class PagingScrollHelper {
         }
     }
 
+    /**
+     *  @param recycleView recyclerView you want to support
+     *  @param adapter recyclerView adapter
+     */
     fun attachToRecyclerView(recycleView: RecyclerView?, adapter: RecyclerView.Adapter<*>?) {
         requireNotNull(recycleView) { "recycleView must be not null" }
         mRecyclerView = recycleView
@@ -107,6 +108,9 @@ open class PagingScrollHelper {
         updateLayoutManger()
     }
 
+    /**
+     *  Need to reset values when updating layoutManager
+     */
     fun updateLayoutManger() {
         val layoutManager = mRecyclerView!!.layoutManager
         if (layoutManager != null) {
@@ -120,6 +124,42 @@ open class PagingScrollHelper {
             startY = 0
             offsetX = 0
             offsetY = 0
+        }
+    }
+
+    fun setOnPageChangedListener(listener: OnPageChangedListener) {
+        mOnPageChangeListener = listener
+    }
+
+    /**
+     * scroll to page
+     */
+    fun setCurrentPage(page: Int) {
+        mRecyclerView!!.scrollToPosition(0)
+        updateLayoutManger()
+        this.currentPage = page
+        mOnFlingListener.onFling(0, 0)
+    }
+
+    /**
+     * scroll to next page
+     *  @param skip skip page count
+     */
+    fun scrollToNextPage(skip: Int = 1) {
+        this.indexPage = skip
+        mOnFlingListener.onFling(Integer.MAX_VALUE, Integer.MAX_VALUE)
+    }
+
+    /**
+     *  @param enable auto scroll enable
+     *  @param autoScrollDuration auto scroll duration
+     */
+    fun setAutoScroll(enable: Boolean, autoScrollDuration: Long) {
+        this.mAutoScrollEnable = enable
+        this.mAutoScrollDuration = autoScrollDuration
+        mInnerHandler?.removeMessages(1)
+        if (enable) {
+            mInnerHandler?.sendEmptyMessageDelayed(1, autoScrollDuration)
         }
     }
 
@@ -261,31 +301,6 @@ open class PagingScrollHelper {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             offsetY += dy
             offsetX += dx
-        }
-    }
-
-    fun setOnPageChangeListener(listener: OnPageChangeListener) {
-        mOnPageChangeListener = listener
-    }
-
-    fun setCurrentPage(page: Int) {
-        mRecyclerView!!.scrollToPosition(0)
-        updateLayoutManger()
-        this.currentPage = page
-        mOnFlingListener.onFling(0, 0)
-    }
-
-    fun scrollToNextPage(skip: Int = 1) {
-        this.indexPage = skip
-        mOnFlingListener.onFling(Integer.MAX_VALUE, Integer.MAX_VALUE)
-    }
-
-    fun setAutoScroll(enable: Boolean, autoScrollDuration: Long) {
-        this.mAutoScrollEnable = enable
-        this.mAutoScrollDuration = autoScrollDuration
-        mInnerHandler?.removeMessages(1)
-        if (enable) {
-            mInnerHandler?.sendEmptyMessageDelayed(1, autoScrollDuration)
         }
     }
 }
