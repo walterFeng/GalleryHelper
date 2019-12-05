@@ -5,22 +5,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
+    android:padding="10dp"
     tools:context="com.walter.gallery.MainActivity">
 
     <TextView
-        android:id="@+id/titleTextView"
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
+        android:background="@android:drawable/btn_default_small"
         android:gravity="center"
-        android:text="RecyclerView"
+        android:onClick="changeOrientation"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:text="Change Orientation"
+        android:textColor="#000000"
+        android:textSize="13sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#222222"
+        android:text="attach to a ordinary RecyclerView："
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/button" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
-        android:background="@android:color/darker_gray"
+        android:background="#f5f5f5"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:padding="50dp"
@@ -28,5 +47,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+
 
 </android.support.constraint.ConstraintLayout>
