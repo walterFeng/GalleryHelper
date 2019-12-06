@@ -110,6 +110,7 @@ open class PagingScrollHelper {
 
     fun detachedToRecyclerView() {
         mRecyclerView?.removeOnScrollListener(mOnScrollListener)
+        mRecyclerView = null
     }
 
     /**
