@@ -49,6 +49,19 @@ class ScaleTransformHelper {
         if (scaleScrollListener != null) {
             mRecyclerView?.removeOnScrollListener(scaleScrollListener!!)
         }
+        mRecyclerView = null
+    }
+
+    @JvmOverloads
+    fun setAnimatorParams(scale: Float = -1f, alpha: Float = -1f) {
+        if (mRecyclerView == null) {
+            return
+        }
+        scaleScrollListener?.scale = if (scale >= 0) scale else scaleScrollListener?.scale ?: 1f
+        scaleScrollListener?.alpha = if (scale >= 0) alpha else scaleScrollListener?.alpha ?: 1f
+        layoutChangeListener?.scale = scaleScrollListener?.scale ?: 1f
+        layoutChangeListener?.alpha = scaleScrollListener?.alpha ?: 1f
+        layoutChangeListener?.onLayoutChange(mRecyclerView!!, 0, 0, 0, 0, 0, 0, 0, 0)
     }
 
     inner class ScaleScrollListener(var scale: Float = 1f, var alpha: Float = 1f) :
@@ -79,7 +92,7 @@ class ScaleTransformHelper {
     }
 
     inner class LayoutChangeListener(
-        var recyclerView: RecyclerView? = null,
+        private var recyclerView: RecyclerView? = null,
         var scale: Float = 1f,
         var alpha: Float = 1f
     ) :

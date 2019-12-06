@@ -42,6 +42,7 @@ class LopperHelper {
 
     fun detachedToRecyclerView() {
         mRecyclerView?.adapter = mAdapter
+        mRecyclerView = null
     }
 
     /**
