@@ -62,13 +62,14 @@ open class PagingScrollHelper {
             }
         }
 
-
     // page width and height:
     private val originHeight: Int
-        get() = mRecyclerView!!.height - mRecyclerView!!.paddingTop - mRecyclerView!!.paddingBottom
+        get() = if (mRecyclerView == null) 0 else
+            mRecyclerView!!.height - mRecyclerView!!.paddingTop - mRecyclerView!!.paddingBottom
 
     private val originWidth: Int
-        get() = mRecyclerView!!.width - mRecyclerView!!.paddingLeft - mRecyclerView!!.paddingRight
+        get() = if (mRecyclerView == null) 0 else
+            mRecyclerView!!.width - mRecyclerView!!.paddingLeft - mRecyclerView!!.paddingRight
 
     private enum class ORIENTATION {
         HORIZONTAL, VERTICAL, NULL
@@ -110,7 +111,9 @@ open class PagingScrollHelper {
 
     fun detachedToRecyclerView() {
         mRecyclerView?.removeOnScrollListener(mOnScrollListener)
+        mAnimator?.cancel()
         mRecyclerView = null
+        mAnimator = null
     }
 
     /**
