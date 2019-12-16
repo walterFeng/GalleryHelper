@@ -17,7 +17,7 @@
    maven { url 'https://jitpack.io' } //repositories
 
    //in your app project build.gralde file:
-   implementation 'com.github.walterFeng:GalleryHelper:1.0.1'
+   implementation 'com.github.walterFeng:GalleryHelper:1.0.2'
    ```
 
 2. Attach to recyclerView after `setContentView()`:

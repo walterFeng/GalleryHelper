@@ -17,7 +17,7 @@
    maven { url 'https://jitpack.io' } //放到repositories下
 
    //在你项目的app目录下的build.gradle中添加:
-   implementation 'com.github.walterFeng:GalleryHelper:1.0.1'
+   implementation 'com.github.walterFeng:GalleryHelper:1.0.2'
    ```
 
 2. `setContentView()`之后, 将 GalleryHelper 加载到RecyclerView上:
